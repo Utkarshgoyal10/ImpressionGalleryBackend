@@ -1,26 +1,45 @@
-import dotenv from "dotenv";
+import { google } from "googleapis";
 import nodemailer from "nodemailer";
+import dotenv from "dotenv";
+
 dotenv.config();
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST,
-  port:465,
-  secure: true,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass:process.env.EMAIL_PASS
-  }
-});
+
+const oAuth2Client = new google.auth.OAuth2(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+  process.env.GOOGLE_REDIRECT_URI
+);
+
+oAuth2Client.setCredentials({ refresh_token: process.env.GMAIL_REFRESH_TOKEN });
 
 export const sendEmail = async (to, subject, html) => {
   try {
-    await transporter.sendMail({
-      from: `"Mobile Shop" <${process.env.EMAIL_USER}>`,
+    const accessToken = await oAuth2Client.getAccessToken();
+    console.log(process.env.GMAIL_USER);
+    
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        type: "OAuth2",
+        user: process.env.GMAIL_USER,
+        clientId: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        refreshToken: process.env.GMAIL_REFRESH_TOKEN,
+        accessToken: accessToken.token,
+      },
+    });
+
+    const mailOptions = {
+      from: `"Impression Gallery" <${process.env.EMAIL_USER}>`,
       to,
       subject,
-      html
-    });
-    console.log(`📧 Email sent to ${to}`);
-  } catch (err) {
-    console.error("Email Error:", err);
+      html,
+    };
+
+    const result = await transporter.sendMail(mailOptions);
+    console.log("Email sent ✅", result.messageId);
+    return result;
+  } catch (error) {
+    console.error("Email sending failed ❌", error);
   }
 };

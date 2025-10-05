@@ -5,37 +5,45 @@ import { sendPushNotification } from "../firebaseAdmin.js"; // make sure this se
 
 // Runs every day at 9:00 AM
 cron.schedule("*/2 * * * *", async () => {
-  const today = new Date();
-  const day = today.getUTCDate();
-  const month = today.getUTCMonth() + 1;
+    const today = new Date();
+    const day = today.getUTCDate();
+    const month = today.getUTCMonth() + 1;
 
-  const users = await User.find({
-    $expr: {
-      $and: [
-        { $eq: [{ $dayOfMonth: "$dob" }, day] },
-        { $eq: [{ $month: "$dob" }, month] }
-      ]
-    }
-  });
-  for (const user of users) {
-    // 1️⃣ Send Email
-    // if (user.email) {
-    //   await sendEmail(
-    //     user.email,
-    //     "From Impression Gallery - Happy Birthday! 🎉",
-    //     `Hi ${user.name},\n\nWishing you a wonderful birthday! 🎂`
-    //   );
-    // }
+    try {
+        // Find users whose birthday is today
+        const users = await User.find({
+        $expr: {
+            $and: [
+            { $eq: [{ $dayOfMonth: "$dob" }, day] },
+            { $eq: [{ $month: "$dob" }, month] }
+            ]
+        }
+    });
 
-    // 2️⃣ Send Push Notification (if FCM token exists)
-    if (user.fcmToken) {
-      await sendPushNotification(
-        user.fcmToken,
-        "🎉 Happy Birthday!",
-        `Hi ${user.name}, have a wonderful day!`
-      );
-    } else {
-      console.log(`No FCM token for user: ${user.email}`);
+    for (const user of users) {
+      // 1️⃣ Optional: Send Email
+    //   if (user.email) {
+    //     await sendEmail(
+    //       user.email,
+    //       "🎉 Happy Birthday from Impression Gallery!",
+    //       `Hi ${user.name},\n\nClick here to claim your birthday offer: https://yourdomain.com/birthday-offer?userId=${user._id}`
+    //     );
+    //   }
+
+      // 2️⃣ Send Push Notification (if FCM token exists)
+      if (user.fcmToken) {
+        await sendPushNotification(
+          user.fcmToken,
+          `🎉 Happy Birthday, ${user.name}!`,
+          "Click to see your special birthday offer 🎁",
+          {
+            route: `/birthday-offer?userId=${user._id}`, // dynamic route for frontend
+          }
+        );
+      } else {
+      }
     }
+  } catch (err) {
+    console.error("Error running birthday cron job:", err);
   }
 });
