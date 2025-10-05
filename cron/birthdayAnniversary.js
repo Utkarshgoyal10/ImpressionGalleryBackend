@@ -17,9 +17,6 @@ cron.schedule("*/2 * * * *", async () => {
       ]
     }
   });
-
-  console.log("Birthday Users:", users);
-
   for (const user of users) {
     // 1️⃣ Send Email
     // if (user.email) {
