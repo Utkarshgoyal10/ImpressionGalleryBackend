@@ -3,9 +3,6 @@ import admin from "firebase-admin";
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 
-console.log("Render Firebase Key loaded?", !!process.env.FIREBASE_PRIVATE_KEY);
-console.log("Key contains \\n?", process.env.FIREBASE_PRIVATE_KEY?.includes("\\n"));
-console.log("Key starts:", process.env.FIREBASE_PRIVATE_KEY?.slice(0, 30));
 
 admin.initializeApp({
   credential: admin.credential.cert({

@@ -1,7 +1,5 @@
 import { google } from "googleapis";
-import nodemailer from "nodemailer";
 import dotenv from "dotenv";
-
 dotenv.config();
 
 const oAuth2Client = new google.auth.OAuth2(
@@ -14,32 +12,34 @@ oAuth2Client.setCredentials({ refresh_token: process.env.GMAIL_REFRESH_TOKEN });
 
 export const sendEmail = async (to, subject, html) => {
   try {
-    const accessToken = await oAuth2Client.getAccessToken();
-    console.log(process.env.GMAIL_USER);
-    
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        type: "OAuth2",
-        user: process.env.GMAIL_USER,
-        clientId: process.env.GOOGLE_CLIENT_ID,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        refreshToken: process.env.GMAIL_REFRESH_TOKEN,
-        accessToken: accessToken.token,
-      },
+    const gmail = google.gmail({ version: "v1", auth: oAuth2Client });
+
+    const messageParts = [
+      `From: "Impression Gallery" <${process.env.GMAIL_USER}>`,
+      `To: ${to}`,
+      `Subject: ${subject}`,
+      "MIME-Version: 1.0",
+      "Content-Type: text/html; charset=UTF-8",
+      "",
+      html,
+    ];
+
+    const message = messageParts.join("\n");
+
+    const encodedMessage = Buffer.from(message)
+      .toString("base64")
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=+$/, "");
+
+    const result = await gmail.users.messages.send({
+      userId: "me",
+      requestBody: { raw: encodedMessage },
     });
 
-    const mailOptions = {
-      from: `"Impression Gallery" <${process.env.EMAIL_USER}>`,
-      to,
-      subject,
-      html,
-    };
-
-    const result = await transporter.sendMail(mailOptions);
-    console.log("Email sent ✅", result.messageId);
-    return result;
+    console.log("Email sent ✅");
+    return result.data;
   } catch (error) {
-    console.error("Email sending failed ❌", error);
+    console.error("Email sending failed ❌ ", error);
   }
 };
