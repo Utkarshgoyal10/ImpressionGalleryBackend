@@ -4,7 +4,7 @@ const workerSchema = new mongoose.Schema({
   name: { type: String, required: true },         // ✅ worker name
   email: { type: String, required: true, unique: true },
   passwordHash: { type: String, required: true },
-  role: { type: String, default: "worker" },     // worker or owner
+  role: { type: String, default: "Employee" },     // Employee or Owner
   verificationCode: String,
   verificationExpiry: Date
 }, { timestamps: true });

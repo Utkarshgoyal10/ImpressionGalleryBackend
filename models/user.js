@@ -4,6 +4,16 @@ const userSchema = new mongoose.Schema({
   name: String,
   email: { type: String, unique: true },
   phone: { type: String, unique: true },
+  purchaseItems: [
+  {
+    item: String,
+    date: {
+      type: Date,
+      default: Date.now
+    },
+    addedBy: String   // worker name
+  }
+],
   dob: Date,
   anniversary: Date,
   membershipTier: { type: String, default: "Silver" },

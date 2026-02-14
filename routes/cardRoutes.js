@@ -36,6 +36,8 @@ router.get("/card", async (req, res) => {
       referralCode: user.referralCode,
       purchaseCount: user.purchaseCount,
       referralCount: user.referralCount,
+      photoUrl: user.photo,
+      dob: user.dob
     };
 
     res.status(200).json({
