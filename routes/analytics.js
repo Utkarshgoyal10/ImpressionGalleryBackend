@@ -10,15 +10,31 @@ router.use(protect);
 /* =====================================================
    Helper: Get Day Range
 ===================================================== */
+// IST based day range (correct for India)
 const getDayRange = (offset = 0) => {
-  const start = new Date();
-  start.setHours(0, 0, 0, 0);
-  start.setDate(start.getDate() - offset);
+  const IST_OFFSET = 5.5 * 60 * 60 * 1000; // 5 hours 30 minutes
 
-  const end = new Date(start);
-  end.setHours(23, 59, 59, 999);
+  const now = new Date();
 
-  return { start, end };
+  // Convert current UTC time to IST
+  const istNow = new Date(now.getTime() + IST_OFFSET);
+
+  // Move to required day
+  istNow.setDate(istNow.getDate() - offset);
+
+  // Start of IST day
+  const startIST = new Date(istNow);
+  startIST.setHours(0, 0, 0, 0);
+
+  // End of IST day
+  const endIST = new Date(istNow);
+  endIST.setHours(23, 59, 59, 999);
+
+  // Convert IST back to UTC for MongoDB query
+  const startUTC = new Date(startIST.getTime() - IST_OFFSET);
+  const endUTC = new Date(endIST.getTime() - IST_OFFSET);
+
+  return { start: startUTC, end: endUTC };
 };
 
 /* =====================================================
