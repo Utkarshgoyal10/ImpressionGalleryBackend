@@ -20,7 +20,7 @@ export const membershipCardTemplate = ({ user, productImages = [] }) => {
         color: '#3B82F6', // Blue
         bgColor: 'http://res.cloudinary.com/dvh3ndrgx/image/upload/v1759961769/knq3mmu0zqvkgfbdsm44.jpg',
         textColor: '#000000',
-        perks: 'As a Silver member, you enjoy *10% off all repairs*, a special Birthday gift, and access to our priority service line.',
+        perks: 'As a Silver member, you enjoy min 10% off on all accessories, a FREE screen protector, a special Birthday gift, and access to our priority service line.',
         filter: 'brightness(60%)',
         font2:'#000000'
     },
@@ -28,13 +28,13 @@ export const membershipCardTemplate = ({ user, productImages = [] }) => {
         color: '#D97706', // Amber/Gold
         bgColor: 'http://res.cloudinary.com/dvh3ndrgx/image/upload/v1759961767/xrrvllowwpn1bekbhne8.jpg',
         textColor: '#000000',
-        perks: 'Your Gold status grants you *20% off all repairs*, a FREE screen protector, a Birthday gift, and a dedicated account manager for premium support.',
+        perks: 'Your Gold status grants you min 20% off on all accessories,two screen protector, a Birthday gift, and a dedicated account manager for premium support.',
     },
     default: {
         color: '#9333EA', // Purple
         bgColor: 'http://res.cloudinary.com/dvh3ndrgx/image/upload/v1759961768/nhxkhckxufohgajbropd.jpg',
         textColor: '#ffffff',
-        perks: 'Platinum members enjoy *30% off all repairs*, VIP support, early access to new products, and exclusive invites to events.',
+        perks: 'Platinum members enjoy min 30% off on all accessories, VIP support, early access to new products, and exclusive invites to events.',
     },
 };
 
@@ -237,7 +237,7 @@ export const membershipCardTemplate = ({ user, productImages = [] }) => {
                     <tr>
                         <td align="center" style="padding: 20px 40px; font-family: Arial, sans-serif; font-size: 12px; line-height: 18px; color: #9ca3af; border-top: 1px solid #eeeeee;">
                             <p style="margin: 0;">
-                                Impression Gallery | Opposite devi mandir, Nai sadak, Siyana Bulandshahr
+                                Impression Gallery | Opposite devi mandir, Nai sadak, Siyana Bulandshahr | 8859464600
                             </p>
                         </td>
                     </tr>

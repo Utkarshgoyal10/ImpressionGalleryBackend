@@ -10,6 +10,8 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import ownerNotificationTemplate from "../templates/ownerNotificationTemplate.js"; // 🆕 new email template
 import { updatedMembershipCardTemplate } from "../templates/updatedMembershipCardTemplate.js";
 import Activity from "../models/activity.js";
+import referralOwnerTemplate from "../templates/referralOwnerTemplate.js";
+
 
 const router = express.Router();
 
@@ -116,7 +118,7 @@ router.post("/", upload.fields([{ name: "photo", maxCount: 1 }]), async (req, re
       userName: newUser.name,
       actionType: "created",
       previousCount: 0,
-      item: purchaseItem || null,
+      item: purchaseItem,
       newCount: newUser.purchaseCount,
       performedBy: req.worker.name,
       role: req.worker.role
@@ -148,10 +150,14 @@ router.post("/", upload.fields([{ name: "photo", maxCount: 1 }]), async (req, re
     const ownerHtml = ownerNotificationTemplate({
       action: "New Card Created",
       customer: newUser.toObject(),
+      previousCount:0,
+      newCount: newUser.purchaseCount,
+      performedBy: req.worker.name,
+      role: req.worker.role,
       time: new Date().toLocaleString()
     });
 
-    await sendEmail(ownerEmail, "🆕 New Customer Card Created", ownerHtml);
+    await sendEmail(ownerEmail, "New Customer Card Created", ownerHtml);
 
     /* =====================================================
        REFERRAL UPDATE (if referral mobile provided)
@@ -194,21 +200,21 @@ router.post("/", upload.fields([{ name: "photo", maxCount: 1 }]), async (req, re
       );
 
       // Owner notification for referral
-      const referralOwnerHtml = `
-        <h2>Referral Added</h2>
-        <p><strong>Referrer:</strong> ${refUser.name}</p>
-        <p><strong>Phone:</strong> ${refUser.phone}</p>
-        <p><strong>Previous Tier:</strong> ${oldTier}</p>
-        <p><strong>New Tier:</strong> ${refUser.membershipTier}</p>
-        <p><strong>Previous Referrals:</strong> ${oldReferralCount}</p>
-        <p><strong>New Referrals:</strong> ${refUser.referralCount}</p>
-        <p><strong>Referred Customer:</strong> ${newUser.name}</p>
-        <p><strong>Time:</strong> ${new Date().toLocaleString()}</p>
-      `;
+        const referralOwnerHtml = referralOwnerTemplate({
+          refUser: refUser.toObject(),
+          newUser: newUser.toObject(),
+          oldTier,
+          oldReferralCount,
+          performedBy: req.worker.name,
+          role: req.worker.role,
+          time: new Date().toLocaleString()
+    });
+
+
 
       await sendEmail(
         ownerEmail,
-        "🔁 Customer Referral Added",
+        "Customer Referral Added",
         referralOwnerHtml
       );
     }
@@ -344,11 +350,11 @@ router.put("/purchase", protect, async (req, res) => {
     const ownerHtml = ownerNotificationTemplate({
       action: "Purchase Added",
       customer: user.toObject(),
-      oldTier,
-      oldPurchaseCount: oldCount,
-      oldReferralCount,
-      item: purchaseItem,
-      time: new Date().toLocaleString()
+      previousCount:oldCount,
+      newCount: user.purchaseCount,
+      performedBy: req.worker.name,
+      item:purchaseItem,
+      role: req.worker.role
     });
 
     await sendEmail(
@@ -394,7 +400,6 @@ router.put("/referral", async (req, res) => {
 
     // Update referral count
     const oldTier = user.membershipTier;
-    const oldCount = user.purchaseCount;
     const oldreferralCount = user.referralCount;
     user.referralCount += 1;
 
@@ -422,28 +427,22 @@ router.put("/referral", async (req, res) => {
     const cardHtml = membershipCardTemplate(cardPayload);     
     await sendEmail(
       user.email,
-      "🎉 Your Membership Card Updated",
+      "Your Membership Card Updated",
       cardHtml
     );
 
     // 🧑‍💼 Send email to the shop owner about this update
     const ownerEmail = process.env.OWNER_EMAIL || "shopowner@example.com";
-     const ownerEmailHtml = `
-    <h2>Customer Card Updated</h2>
-    <p><strong>Name:</strong> ${user.name}</p>
-    <p><strong>Email:</strong> ${user.email}</p>
-    <p><strong>Phone:</strong> ${user.phone}</p>
-    <p><strong>Previous Tier:</strong> ${oldTier}</p>
-    <p><strong>New Tier:</strong> ${user.membershipTier}</p>
-
-    <p><strong>Previous Purchases:</strong> ${oldCount}</p>
-    <p><strong>New Purchase Count:</strong> ${user.purchaseCount}</p>
-    <p><strong>Previous Referal:</strong> ${oldreferralCount}</p>
-    <p><strong>New Referal Count:</strong> ${user.referralCount}</p>
-    <p><strong>Card Expiry:</strong> ${user.cardExpiry.toDateString()}</p>
-    <p><strong>Updated At:</strong> ${new Date().toLocaleString()}</p>
-  `;
-    await sendEmail(ownerEmail, "🔁 Customer Referral Updated", ownerEmailHtml);
+    const referralOwnerHtml = referralOwnerTemplate({
+      refUser: refUser.toObject(),
+      newUser: newUser.toObject(),
+      oldTier,
+      oldreferralCount,
+      performedBy: req.worker.name,
+      role: req.worker.role,
+      time: new Date().toLocaleString()
+});
+    await sendEmail(ownerEmail, "Customer Referral Updated", referralOwnerHtml);
 
     res.json({
       msg: "Referral updated successfully and emails sent.",
