@@ -87,7 +87,7 @@ router.post("/", upload.fields([{ name: "photo", maxCount: 1 }]), async (req, re
       phone,
       dob,
       anniversary,
-      photo: uploadedImage.url,
+      photo: uploadedImage.secure_url,
       referredBy,
       purchaseCount: purchaseItem ? 1 : 0,
       purchaseItems: purchaseItem
